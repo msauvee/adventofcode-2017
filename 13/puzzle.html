@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script>
+
+class Scanner {
+    constructor(depth) {
+        this.depth = depth;
+        this.current = 0;
+        this.increment = +1;
+    }
+
+    display(active) {
+        var result = "";
+        for (var i = 0; i < this.depth; i++) {
+            if (active && i == 0)
+                result+="(";
+            else 
+                result+="[";
+
+            if (i === this.current)
+                result += "S";
+            else
+                result += " ";
+
+            if (active && i == 0)
+                result+=")";
+            else 
+                result+="]";
+        }
+
+        return result.trim();
+    }
+
+    move() {
+        var newPosition = this.current + this.increment;
+        if (newPosition >= 0 && newPosition < this.depth) {
+            this.current = newPosition;
+        }
+        else {
+            this.increment *= -1;
+            this.current = this.current + this.increment;
+        }
+    }
+}
+
+class Puzzle {
+    constructor(input) {
+        this.scanners = [];
+        this.current = -1;
+        for (var item in input) {
+            var index = Number(item);
+            this.scanners[index] = new Scanner(input[index]);
+        }      
+    }
+
+    display(title) {
+        var result = title + "<br>";
+        for (var i = 0; i < this.scanners.length; i++) {
+            if (i >= 10)
+                result += i.toString() + ": ";
+            else 
+                result += i.toString() + " : ";     
+            if (this.scanners[i] !== undefined) {     
+                result += this.scanners[i].display(i == this.current);
+            }
+            else if (this.current == i) {
+                result += "( )";
+            }
+            result += "<br>";
+        }
+        return result.trim();
+    }
+
+    moveCurrent() {
+        this.current++;
+    }
+
+    checkCauht() {
+        if (this.scanners[this.current] !== undefined && this.scanners[this.current].current == 0)
+            return this.current * this.scanners[this.current].depth;
+        return 0;
+    }
+
+    moveScanners() {
+        for (var i = 0; i < this.scanners.length; i++) {
+            if (this.scanners[i] !== undefined)
+                this.scanners[i].move();
+        }
+    }
+
+    computeSeverity() {   
+        document.getElementById("progress").innerHTML = this.display("Initial state");
+        var cauhtCounter=0;
+        var pico = 0;
+        while (this.current < this.scanners.length - 1) {
+            // move current
+            this.moveCurrent();
+            cauhtCounter += this.checkCauht();
+            document.getElementById("progress").innerHTML = this.display("Picosecond " + pico + " (" + cauhtCounter + "):");
+            pico++;
+            this.moveScanners();
+        }
+        return cauhtCounter;
+    }
+}
+
+
+
+</script>
+<script>
+input={
+0: 3,
+1: 2,
+2: 6,
+4: 4,
+6: 4,
+8: 8,
+10: 6,
+12: 8,
+14: 5,
+16: 6,
+18: 8,
+20: 8,
+22: 12,
+24: 6,
+26: 9,
+28: 8,
+30: 12,
+32: 12,
+34: 17,
+36: 12,
+38: 8,
+40: 12,
+42: 12,
+44: 10,
+46: 12,
+48: 12,
+50: 12,
+52: 14,
+54: 14,
+56: 10,
+58: 14,
+60: 12,
+62: 14,
+64: 14,
+66: 14,
+68: 14,
+70: 14,
+72: 14,
+74: 14,
+76: 14,
+86: 14,
+94: 20,
+96: 18
+};
+
+// input={
+// 0: 3,
+// 1: 2,
+// 4: 4,
+// 6: 4
+//};
+
+function doPuzzle() {
+    var puzzle = new Puzzle(input);
+    var result = puzzle.computeSeverity();
+    document.getElementById("result").innerHTML = result + " !!"; 
+}
+</script>
+ <br>   
+ <p id="progress">not started</p>
+ <button type="button" onclick="doPuzzle()">click</button>
+ <p id="result">Click on a Button</p>
+</body>
+</html>

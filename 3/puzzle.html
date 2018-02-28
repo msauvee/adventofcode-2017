@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script>
+input=1024
+
+var pos=[];
+var dir=[[1,0],[0,1],[-1,0],[0,-1]];
+
+
+class OffsetDoubleArray {
+	constructor() {
+		this.array = [];
+		this.offset_x = 0;
+		this.offset_y = 0;
+	}
+
+	add(x, y, value) {
+		var shift_x = -x - this.offset_x;
+		if (shift_x > 0) {
+			for (var i = this.array.length-1; i >= 0; i--) {
+				this.array[i + shift_x] = this.array[i]
+			}
+			for (var i = 0; i < shift_x; i++) {
+				this.array[i] = undefined
+			}
+			this.offset_x = -x;
+		}
+		var shift_y = -y - this.offset_y;
+		if (shift_y > 0) {
+			for (var i = 0; i < this.array.length; i++) {
+				for (var j = this.array[i].length-1; j >= 0; j--) {
+					this.array[i][j + shift_y] = this.array[i][j]
+				}	
+				for (var j = 0; j < shift_y; j++) {
+					this.array[i][j] = undefined
+				}							
+			}
+			this.offset_y = -y;
+		}		
+		if (typeof this.array[x + this.offset_x] === 'undefined') {
+			this.array[x + this.offset_x] = [];
+		}
+		this.array[x + this.offset_x][y + this.offset_y] = value;
+	}
+
+	exists(x, y) {
+		return typeof this.array[x + this.offset_x] !== 'undefined' && typeof this.array[x + this.offset_x][y + this.offset_y] !== 'undefined';
+	}
+}
+
+function reset() {
+	pos = new OffsetDoubleArray();
+}
+
+function add(x, y, n) {
+	pos.add(x, y, n);
+}
+
+function isBusy(x, y) {
+	return pos.exists(x,y);
+}
+
+
+function goto(max) {
+	reset()
+	var dir_index=3;
+	add(0,0,1);
+	add(1,0,2);
+	var x=1;
+	var y=0;
+	var n=2;
+	while (n < max) {
+		n = n + 1
+		// check if next direction to last_dir
+		while (!isBusy(x+dir[(dir_index+1)%4][0], y+dir[(dir_index+1)%4][1])) {
+			dir_index = (dir_index + 1)%4;
+		}
+		x=x+dir[dir_index][0];
+		y=y+dir[dir_index][1];
+		document.getElementById("progress").innerHTML = n;
+		add(x, y, n);
+	}
+	result={};
+	result.x=x;
+	result.y=y;
+	result.n=n;
+	result.d=Math.abs(x) + Math.abs(y);
+	return result;
+}
+</script>
+<script>
+	function doPuzzle() {
+		var input = Number(document.getElementById("value").value);
+		var result = goto(input);
+		document.getElementById("result").innerHTML = result.n + ": " + result.x + ", " + result.y + "=" + result.d; 
+	}
+</script>
+  input: <input type="text" id="value" value="1024"><br>
+ <button type="button" onclick="doPuzzle()">click</button>
+ <p id="progress">not started</p>
+ <p id="result">Click on a Button</p>
+</body>
+</html>
